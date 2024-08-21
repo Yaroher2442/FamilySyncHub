@@ -1,0 +1,14 @@
+logger:
+  level: ${LOGGER_LEVEL}
+  mod: ${LOGGER_MOD}
+
+postgres:
+  host: ${POSTGRES_HOST}
+  port: ${POSTGRES_PORT}
+  username: ${POSTGRES_USERNAME}
+  password: ${POSTGRES_PASSWORD}
+  database: ${POSTGRES_DATABASE}
+
+telegram:
+  token: ${TELEGRAM_TOKEN}
+  debug: ${TELEGRAM_DEBUG}
