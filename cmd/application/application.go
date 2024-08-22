@@ -3,8 +3,9 @@ package application
 import (
 	"fmt"
 	"github.com/Yaroher2442/FamilySyncHub/cmd/application/config"
-	"github.com/Yaroher2442/FamilySyncHub/internal/contollers"
-	"github.com/Yaroher2442/FamilySyncHub/internal/contollers/commands"
+	"github.com/Yaroher2442/FamilySyncHub/internal/controllers"
+	"github.com/Yaroher2442/FamilySyncHub/internal/controllers/commands"
+	"github.com/Yaroher2442/FamilySyncHub/internal/controllers/common"
 	"github.com/Yaroher2442/FamilySyncHub/internal/pkg/logger"
 	"github.com/Yaroher2442/FamilySyncHub/internal/pkg/shutdown"
 	"github.com/Yaroher2442/FamilySyncHub/internal/pkg/telegram"
@@ -40,14 +41,15 @@ func New() (*Application, error) {
 
 	routes := telegram.NewRouter(
 		appConfig.Telegram,
-		contollers.NewUnknownController(),
+		controllers.NewUnknownController(),
 		telegram.Middlewares(
-			contollers.UserMw(repo),
+			controllers.UserMw(repo),
 		),
-		commands.START.Route(contollers.NewStartController(txManager, repo)),
-		commands.MyFamilies.Route(contollers.NewMyFamiliesController(txManager, repo)),
-		commands.ChoseFamily.Route(contollers.NewChoseFamilyController(txManager, repo)),
-		commands.AddInFamily.Route(contollers.NewAddInFamilyController(txManager, repo)),
+		common.START.Route(commands.NewStartController(txManager, repo)),
+		common.MyFamilies.Route(commands.NewMyFamiliesController(txManager, repo)),
+		common.CreateFamily.Route(commands.NewCreateFamilyController(txManager, repo)),
+		common.ChoseFamily.Route(commands.NewChoseFamilyController(txManager, repo)),
+		common.AddInFamily.Route(commands.NewAddInFamilyController(txManager, repo)),
 	)
 
 	return &Application{

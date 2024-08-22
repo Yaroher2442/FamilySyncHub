@@ -1,7 +1,8 @@
-package contollers
+package commands
 
 import (
 	"context"
+	"github.com/Yaroher2442/FamilySyncHub/internal/controllers/helpers"
 
 	"github.com/avito-tech/go-transaction-manager/trm"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -26,7 +27,7 @@ func NewAddInFamilyController(tx trm.Manager, repository Repository) *AddInFamil
 }
 
 func (c *AddInFamilyController) Handle(ctx context.Context, update *telegram.Update) error {
-	user, err := UserFromCtx(ctx)
+	user, err := helpers.UserFromCtx(ctx)
 	if err != nil {
 		return err
 	}

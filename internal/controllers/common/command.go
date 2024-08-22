@@ -1,4 +1,4 @@
-package commands
+package common
 
 import (
 	"github.com/Yaroher2442/FamilySyncHub/internal/pkg/telegram"
@@ -8,10 +8,11 @@ import (
 type Command string
 
 const (
-	START       Command = "start"
-	MyFamilies  Command = "my_families"
-	ChoseFamily Command = "chose_family"
-	AddInFamily Command = "add_in_family"
+	START        Command = "start"
+	MyFamilies   Command = "my_families"
+	CreateFamily Command = "new_family"
+	ChoseFamily  Command = "chose_family"
+	AddInFamily  Command = "add_in_family"
 )
 
 func (c Command) String() string {
@@ -27,6 +28,10 @@ func (c Command) KeyboardButton() tgbotapi.KeyboardButton {
 }
 func (c Command) KeyboardButtonWithText(text string) tgbotapi.KeyboardButton {
 	return tgbotapi.NewKeyboardButton(c.WithSlash() + " " + text)
+}
+
+func (c Command) InlineKeyboardButtonWithText(text string) tgbotapi.InlineKeyboardButton {
+	return tgbotapi.NewInlineKeyboardButtonData(text, "test")
 }
 
 func (c Command) Route(handler telegram.Handler) telegram.Route {

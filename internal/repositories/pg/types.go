@@ -16,7 +16,7 @@ type Executor interface {
 	// - arguments: The arguments to be passed to the SQL statement.
 	//
 	// Returns:
-	// - pgconn.CommandTag: The command tag returned by the execution.
+	// - pgconn.CommandTag: The common tag returned by the execution.
 	// - error: An error if the execution fails.
 	Exec(ctx context.Context, sql string, arguments ...interface{}) (pgconn.CommandTag, error)
 	// Query executes a SQL query with the provided arguments in the context of the Executor.
@@ -47,7 +47,7 @@ var _ Executor = (*TxExecutor)(nil)
 
 type SqlizerExecutorInterface interface {
 	// Exec executes the SQL statement represented by the given Sqlizer and returns
-	// the command tag and any error encountered.
+	// the common tag and any error encountered.
 	//
 	// ctx: The context.Context to use for the execution.
 	// builder: The Sqlizer representing the SQL statement to execute.

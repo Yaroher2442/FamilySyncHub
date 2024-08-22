@@ -1,7 +1,8 @@
-package contollers
+package commands
 
 import (
 	"context"
+	"github.com/Yaroher2442/FamilySyncHub/internal/controllers/helpers"
 	"github.com/Yaroher2442/FamilySyncHub/internal/pkg/logger"
 	"github.com/Yaroher2442/FamilySyncHub/internal/pkg/telegram"
 	"github.com/avito-tech/go-transaction-manager/trm"
@@ -24,12 +25,12 @@ func NewChoseFamilyController(tx trm.Manager, repository Repository) *ChoseFamil
 }
 
 func (c *ChoseFamilyController) Handle(ctx context.Context, update *telegram.Update) error {
-	user, err := UserFromCtx(ctx)
+	user, err := helpers.UserFromCtx(ctx)
 	if err != nil {
 		return err
 	}
 
-	if update.Update.Message.CommandArguments() == "" {
+	if helpers.ArgEmpty(update) {
 		_, sntErr := update.Bot.Send(tgbotapi.NewMessage(
 			update.ChatId,
 			"Enter your family name like this: /choose_family MyFamily",
@@ -41,7 +42,7 @@ func (c *ChoseFamilyController) Handle(ctx context.Context, update *telegram.Upd
 	}
 
 	return c.txm.Do(ctx, func(ctx context.Context) error {
-		family, err := c.repo.GetFamilyByName(ctx, update.Update.Message.CommandArguments())
+		family, err := c.repo.GetFamilyByName(ctx, helpers.FamName(update))
 		if err != nil {
 			return err
 		}

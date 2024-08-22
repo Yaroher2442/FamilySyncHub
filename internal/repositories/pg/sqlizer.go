@@ -28,7 +28,7 @@ func NewSqlizerExecutor(executor Executor) *SqlizerExecutor {
 }
 
 // Exec executes the SQL statement represented by the given Sqlizer and returns
-// the command tag and any error encountered.
+// the common tag and any error encountered.
 //
 // ctx: The context.Context to use for the execution.
 // builder: The Sqlizer representing the SQL statement to execute.

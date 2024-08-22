@@ -1,33 +1,22 @@
 package pg
 
-import (
-	"github.com/jackc/pgx/v5"
-)
+import "github.com/jackc/pgx/v5"
 
-type SingleScanner[T any] func(pgx.Row) (*T, error)
+type SingleScanner[T any] func(pgx.Rows) (*T, error)
 
-// defaultReflectSingleScanner is a generic function that reflects a single value
-// from a pgx.Row into a struct of type T.
+// defaultReflectSingleScanner is a generic function that reflects a single value from a pgx.Rows
+// into a struct of type T.
 //
-// It takes a pgx.Row as input and returns a pointer to a struct of type T and an error.
-// The returned struct is populated with the value reflected from the row.
-// If an error occurs during the reflection process, the function returns nil for the struct and the error.
-//
-// Parameters:
-// - row: A pgx.Row representing the row from which to reflect the value.
-//
-// Returns:
-// - *T: A pointer to a struct of type T populated with the reflected value.
-// - error: An error if an error occurs during the reflection process.
-func defaultReflectSingleScanner[T any](row pgx.Row) (*T, error) {
-	value := new(T)
-
-	err := row.Scan(value)
+// Parameter row: A pgx.Rows representing the row from which to reflect the value.
+// Returns: *T: A pointer to the struct of type T populated with the
+// reflected value, error: An error if an error occurs during the reflection process.
+func defaultReflectSingleScanner[T any](rows pgx.Rows) (*T, error) {
+	values, err := pgx.CollectExactlyOneRow[*T](rows, pgx.RowToAddrOfStructByName[T])
 	if err != nil {
 		return nil, sqlScanErr(err)
 	}
 
-	return value, nil
+	return values, nil
 }
 
 type MultiScanner[T any] func(pgx.Rows) ([]*T, error)
@@ -46,7 +35,7 @@ type MultiScanner[T any] func(pgx.Rows) ([]*T, error)
 // - []*T: A slice of pointers to structs of type T populated with the reflected values.
 // - error: An error if an error occurs during the reflection process.
 func defaultReflectMultiScanner[T any](rows pgx.Rows) ([]*T, error) {
-	values, err := pgx.CollectRows[*T](rows, pgx.RowToStructByName[*T])
+	values, err := pgx.CollectRows[*T](rows, pgx.RowToAddrOfStructByName[T])
 	if err != nil {
 		return nil, sqlScanErr(err)
 	}
@@ -67,7 +56,11 @@ type Scanner[T any] struct {
 // Returns:
 // - *T: A pointer to a struct of type T populated with the reflected value.
 // - error: An error if an error occurs during the reflection process.
-func (s Scanner[T]) Single(row pgx.Row) (*T, error) {
+func (s Scanner[T]) Single(row pgx.Rows, err error) (*T, error) {
+	if err != nil {
+		return nil, sqlScanErr(err)
+	}
+
 	return s.single(row)
 }
 
@@ -99,8 +92,8 @@ type ScannerOpts[T any] func(*Scanner[T])
 // - single: A SingleScanner[T] representing the scanner to be set.
 //
 // Returns:
-// - ScannerOpts[T]: A function that takes a *Scanner[T] as
-// input and modifies its single field to be the input SingleScanner[T].
+//   - ScannerOpts[T]: A function that takes a *Scanner[T] as input and modifies its single
+//     field to be the input SingleScanner[T].
 func WithSingleSanner[T any](single SingleScanner[T]) ScannerOpts[T] {
 	return func(s *Scanner[T]) {
 		s.single = single

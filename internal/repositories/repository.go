@@ -42,9 +42,11 @@ func ModelUserToDomainUser(model *models.TgUser) *domain.User {
 }
 
 func (r *Repository) GetUserById(ctx context.Context, id int64) (*domain.User, error) {
-	sql := sq().Select("*").From(USER_TABLE).Where(squirrel.Eq{"id": id}).Limit(1)
-	row := r.executor.QueryRow(ctx, sql)
-	model, err := pg.Scan[models.TgUser]().Single(row)
+	sql := sq().Select("*").
+		From(USER_TABLE).
+		Where(squirrel.Eq{"tg_id": id}).
+		Limit(1)
+	model, err := pg.Scan[models.TgUser]().Single(r.executor.Query(ctx, sql))
 	if err != nil {
 		return nil, err
 	}
@@ -53,9 +55,11 @@ func (r *Repository) GetUserById(ctx context.Context, id int64) (*domain.User, e
 }
 
 func (r *Repository) GetUserByTgName(ctx context.Context, name string) (*domain.User, error) {
-	sql := sq().Select("*").From(USER_TABLE).Where(squirrel.Eq{"tg_name": name}).Limit(1)
-	row := r.executor.QueryRow(ctx, sql)
-	model, err := pg.Scan[models.TgUser]().Single(row)
+	sql := sq().Select("*").
+		From(USER_TABLE).
+		Where(squirrel.Eq{"tg_name": name}).
+		Limit(1)
+	model, err := pg.Scan[models.TgUser]().Single(r.executor.Query(ctx, sql))
 	if err != nil {
 		return nil, err
 	}
@@ -90,9 +94,10 @@ func (r *Repository) CreateUser(ctx context.Context, user *domain.User) error {
 				cast.StrToPgText(user.FullName),
 				cast.StrToPgText(user.AccountName),
 			))
-	if strings.Contains(err.Error(), "violates unique constraint") {
+	if err != nil && strings.Contains(err.Error(), "violates unique constraint") {
 		return domain.ErrUserExists
 	}
+
 	return err
 }
 
@@ -119,9 +124,11 @@ func (r *Repository) AddFamilyMember(ctx context.Context, userId domain.USERID, 
 }
 
 func (r *Repository) GetFamilyByName(ctx context.Context, name string) (*domain.Family, error) {
-	sql := sq().Select("*").From(FAMILY_TABLE).Where(squirrel.Eq{"name": name}).Limit(1)
-	row := r.executor.QueryRow(ctx, sql)
-	model, err := pg.Scan[models.Family]().Single(row)
+	sql := sq().Select("*").
+		From(FAMILY_TABLE).
+		Where(squirrel.Eq{"name": name}).
+		Limit(1)
+	model, err := pg.Scan[models.Family]().Single(r.executor.Query(ctx, sql))
 	if err != nil {
 		return nil, err
 	}
@@ -145,8 +152,8 @@ func (r *Repository) ListUserFamilies(ctx context.Context, user *domain.User) ([
 		From(FAMILY_USER_TABLE).
 		Where(squirrel.Eq{"user_id": user.TgID}).
 		Join(FAMILY_TABLE + " ON " + FAMILY_USER_TABLE + ".family_id = " + FAMILY_TABLE + ".id")
-
-	resultModels, err := pg.Scan[joinStruct]().Multi(r.executor.Query(ctx, sql))
+	rows, err := r.executor.Query(ctx, sql)
+	resultModels, err := pg.Scan[joinStruct]().Multi(rows, err)
 	if err != nil {
 		return nil, err
 	}

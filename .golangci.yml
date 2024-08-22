@@ -107,7 +107,7 @@ linters:
     - testableexamples # checks if examples are testable (have an expected output)
     - testifylint # checks usage of github.com/stretchr/testify
     - testpackage # encourages you to use a separate _test package
-    - thelper # detects golang test helpers without t.Helper() call
+    - thelper # detects golang test controllers without t.Helper() call
     - tparallel # detects inappropriate usage of t.Parallel() method in your Go test codes
     - typecheck # like the front-end of a Go compiler, parses and type-checks Go code
     - unconvert # removes unnecessary type conversions

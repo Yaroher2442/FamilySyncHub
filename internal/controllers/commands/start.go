@@ -1,10 +1,10 @@
-package contollers
+package commands
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/Yaroher2442/FamilySyncHub/internal/contollers/menus"
+	"github.com/Yaroher2442/FamilySyncHub/internal/controllers/commands/menus"
 	"github.com/Yaroher2442/FamilySyncHub/internal/pkg/telegram"
 	"github.com/avito-tech/go-transaction-manager/trm"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"

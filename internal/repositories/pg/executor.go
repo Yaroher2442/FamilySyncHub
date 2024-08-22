@@ -92,7 +92,7 @@ func (e *TxExecutor) tr(ctx context.Context) trmpgx.Tr { //nolint:ireturn // lib
 // - arguments: The arguments to be passed to the SQL statement.
 //
 // Returns:
-// - pgconn.CommandTag: The command tag returned by the execution.
+// - pgconn.CommandTag: The common tag returned by the execution.
 // - error: An error if the execution fails.
 func (e *TxExecutor) Exec(
 	ctx context.Context,

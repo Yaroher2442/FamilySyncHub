@@ -11,7 +11,7 @@ CREATE TABLE tg_user
 CREATE TABLE family
 (
     id   UUID        NOT NULL,
-    name VARCHAR(64) NOT NULL,
+    name VARCHAR(64) NOT NULL UNIQUE,
     PRIMARY KEY (id)
 );
 

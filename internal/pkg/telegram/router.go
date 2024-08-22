@@ -66,7 +66,7 @@ func (f *Router) Update(ctx context.Context, update *Update) {
 		}
 	}
 
-	err := handle.Handle(ctx, update)
+	err := handle.Handle(targetCtx, update)
 	if err != nil {
 		f.logger.Error("fail handle message", zap.Error(err))
 		text := "something went wrong, please try again"

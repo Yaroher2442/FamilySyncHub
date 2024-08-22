@@ -15,7 +15,8 @@ type User struct {
 }
 
 var (
-	ErrUserExists = errors.New("user already exists")
+	ErrUserExists   = errors.New("user already exists")
+	ErrFamilyExists = errors.New("family already exists")
 )
 
 type Family struct {

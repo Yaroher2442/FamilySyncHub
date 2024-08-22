@@ -1,8 +1,9 @@
-package contollers
+package commands
 
 import (
 	"context"
-	"github.com/Yaroher2442/FamilySyncHub/internal/contollers/menus"
+	"github.com/Yaroher2442/FamilySyncHub/internal/controllers/commands/menus"
+	"github.com/Yaroher2442/FamilySyncHub/internal/controllers/helpers"
 	"github.com/Yaroher2442/FamilySyncHub/internal/pkg/logger"
 	"github.com/Yaroher2442/FamilySyncHub/internal/pkg/telegram"
 	"github.com/avito-tech/go-transaction-manager/trm"
@@ -25,7 +26,7 @@ func NewMyFamiliesController(tx trm.Manager, repository Repository) *MyFamiliesC
 }
 
 func (c *MyFamiliesController) Handle(ctx context.Context, update *telegram.Update) error {
-	user, err := UserFromCtx(ctx)
+	user, err := helpers.UserFromCtx(ctx)
 	if err != nil {
 		return err
 	}
@@ -34,11 +35,13 @@ func (c *MyFamiliesController) Handle(ctx context.Context, update *telegram.Upda
 	if err != nil {
 		return err
 	}
+	if len(families) == 0 {
+		return helpers.OnlyErr(update.Bot.Send(
+			tgbotapi.NewMessage(update.ChatId, "You don't have any families")),
+		)
+	}
 	msg := tgbotapi.NewMessage(update.ChatId, "My families")
 	msg.ReplyMarkup = menus.MyFamiliesMenu(families)
-	_, err = update.Bot.Send(msg)
-	if err != nil {
-		return err
-	}
-	return nil
+
+	return helpers.OnlyErr(update.Bot.Send(msg))
 }
