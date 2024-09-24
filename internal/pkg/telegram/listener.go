@@ -23,6 +23,10 @@ type Asyncer interface {
 	Go(fn func())
 }
 
+type DebugSyncAsyncer struct{}
+
+func (d *DebugSyncAsyncer) Go(fn func()) { fn() }
+
 type Listener struct {
 	config *Config
 	logger *zap.Logger
@@ -36,11 +40,15 @@ type Config struct {
 }
 
 func NewListener(cfg *Config, router RouterInterface) *Listener {
+	var async Asyncer = pool.New()
+	if cfg.Debug {
+		async = &DebugSyncAsyncer{}
+	}
 	return &Listener{
 		router: router,
 		config: cfg,
 		logger: logger.NewStructLogger("telegram"),
-		async:  pool.New(),
+		async:  async,
 	}
 }
 

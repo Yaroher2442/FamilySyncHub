@@ -8,6 +8,7 @@ import (
 	"github.com/Yaroher2442/FamilySyncHub/internal/repositories/pg/cast"
 	"github.com/Yaroher2442/FamilySyncHub/internal/repositories/pg/models"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"strings"
 )
@@ -27,9 +28,11 @@ func NewRepository(executor pg.Executor) *Repository {
 }
 
 const (
-	USER_TABLE        = "tg_user"
-	FAMILY_TABLE      = "family"
-	FAMILY_USER_TABLE = "family_user"
+	USER_TABLE            = "tg_user"
+	FAMILY_TABLE          = "family"
+	FAMILY_USER_TABLE     = "family_user"
+	CATEGORY_TABLE        = "category"
+	CATEGORY_FAMILY_TABLE = "category_family"
 )
 
 func ModelUserToDomainUser(model *models.TgUser) *domain.User {
@@ -47,6 +50,9 @@ func (r *Repository) GetUserById(ctx context.Context, id int64) (*domain.User, e
 		Where(squirrel.Eq{"tg_id": id}).
 		Limit(1)
 	model, err := pg.Scan[models.TgUser]().Single(r.executor.Query(ctx, sql))
+	if pg.IsPgxErr(err, pgx.ErrNoRows) {
+		return nil, domain.ErrNoUser
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -139,6 +145,22 @@ func (r *Repository) GetFamilyByName(ctx context.Context, name string) (*domain.
 	}, err
 }
 
+func (r *Repository) GetFamilyByID(ctx context.Context, id uuid.UUID) (*domain.Family, error) {
+	sql := sq().Select("*").
+		From(FAMILY_TABLE).
+		Where(squirrel.Eq{"id": id}).
+		Limit(1)
+	model, err := pg.Scan[models.Family]().Single(r.executor.Query(ctx, sql))
+	if err != nil {
+		return nil, err
+	}
+
+	return &domain.Family{
+		ID:   cast.PgUUIDToUUID(model.ID),
+		Name: model.Name,
+	}, err
+}
+
 type joinStruct struct {
 	UserID   pgtype.Int8 `db:"user_id"`
 	FamilyID pgtype.UUID `db:"family_id"`
@@ -152,8 +174,10 @@ func (r *Repository) ListUserFamilies(ctx context.Context, user *domain.User) ([
 		From(FAMILY_USER_TABLE).
 		Where(squirrel.Eq{"user_id": user.TgID}).
 		Join(FAMILY_TABLE + " ON " + FAMILY_USER_TABLE + ".family_id = " + FAMILY_TABLE + ".id")
-	rows, err := r.executor.Query(ctx, sql)
-	resultModels, err := pg.Scan[joinStruct]().Multi(rows, err)
+	resultModels, err := pg.Scan[joinStruct]().Multi(r.executor.Query(ctx, sql))
+	if pg.IsPgxErr(err, pgx.ErrNoRows) {
+		return nil, domain.ErrFamiliesEmpty
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -167,4 +191,22 @@ func (r *Repository) ListUserFamilies(ctx context.Context, user *domain.User) ([
 	}
 
 	return families, nil
+}
+
+func (r *Repository) CreateCategory(ctx context.Context, category *domain.Category) error {
+	_, err := r.executor.Exec(ctx,
+		sq().Insert(CATEGORY_TABLE).
+			Columns("id", "name", "family_id").
+			Values(
+				cast.UUIDToPgUUID(category.ID),
+				cast.StrToPgText(category.Name),
+				cast.UUIDToPgUUID(category.FamilyID),
+			))
+	if err == nil {
+		return nil
+	}
+	if strings.Contains(err.Error(), "violates unique constraint") {
+		return domain.ErrDuplicateCategory
+	}
+	return err
 }

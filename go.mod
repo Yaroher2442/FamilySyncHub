@@ -7,6 +7,7 @@ require (
 	github.com/avito-tech/go-transaction-manager v1.5.0
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/google/uuid v1.6.0
+	github.com/iancoleman/strcase v0.3.0
 	github.com/jackc/pgx/v5 v5.6.0
 	github.com/pashagolub/pgxmock/v2 v2.12.0
 	github.com/sourcegraph/conc v0.3.0
@@ -20,7 +21,6 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect

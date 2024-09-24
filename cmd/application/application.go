@@ -2,8 +2,9 @@ package application
 
 import (
 	"fmt"
+	"github.com/Yaroher2442/FamilySyncHub/internal/controllers/helpers"
+
 	"github.com/Yaroher2442/FamilySyncHub/cmd/application/config"
-	"github.com/Yaroher2442/FamilySyncHub/internal/controllers"
 	"github.com/Yaroher2442/FamilySyncHub/internal/controllers/commands"
 	"github.com/Yaroher2442/FamilySyncHub/internal/controllers/common"
 	"github.com/Yaroher2442/FamilySyncHub/internal/pkg/logger"
@@ -22,6 +23,7 @@ func New() (*Application, error) {
 	if err != nil {
 		return nil, fmt.Errorf("err init config: %w", err)
 	}
+
 	psql, closePsql, err := pg.NewPsql(appConfig.Postgres)
 	if err != nil {
 		return nil, fmt.Errorf("err init psql: %w", err)
@@ -41,15 +43,13 @@ func New() (*Application, error) {
 
 	routes := telegram.NewRouter(
 		appConfig.Telegram,
-		controllers.NewUnknownController(),
-		telegram.Middlewares(
-			controllers.UserMw(repo),
-		),
 		common.START.Route(commands.NewStartController(txManager, repo)),
-		common.MyFamilies.Route(commands.NewMyFamiliesController(txManager, repo)),
-		common.CreateFamily.Route(commands.NewCreateFamilyController(txManager, repo)),
-		common.ChoseFamily.Route(commands.NewChoseFamilyController(txManager, repo)),
-		common.AddInFamily.Route(commands.NewAddInFamilyController(txManager, repo)),
+		common.MyFamilies.Route(helpers.WithUserInCtxHandler(repo, commands.NewMyFamiliesController(txManager, repo))),             //
+		common.NewFamily.Route(helpers.WithUserInCtxHandler(repo, commands.NewCreateFamilyController(txManager, repo))),            //
+		common.ChoseFamily.Route(helpers.WithUserInCtxHandler(repo, commands.NewChoseFamilyController(txManager, repo))),           //
+		common.ChoseFamily.CallbackRoute(helpers.WithUserInCtxHandler(repo, commands.NewChoseFamilyMenuCallback(txManager, repo))), //
+		common.AddInFamily.Route(helpers.WithUserInCtxHandler(repo, commands.NewAddInFamilyController(txManager, repo))),           //
+		common.NewCategory.Route(helpers.WithUserInCtxHandler(repo, commands.NewCreateCategoryController(txManager, repo))),        //
 	)
 
 	return &Application{
@@ -62,6 +62,8 @@ func (app *Application) Run() error {
 	if err != nil {
 		return fmt.Errorf("fail start listener: %w", err)
 	}
+
 	shutdown.RegisterFn(closeFn)
+
 	return nil
 }

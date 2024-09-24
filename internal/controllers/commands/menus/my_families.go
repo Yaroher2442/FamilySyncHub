@@ -6,10 +6,13 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func MyFamiliesMenu(families []*domain.Family) tgbotapi.InlineKeyboardMarkup {
+func ChoseFamilyMenu(families []*domain.Family) tgbotapi.InlineKeyboardMarkup {
 	btns := make([]tgbotapi.InlineKeyboardButton, 0, len(families))
 	for _, family := range families {
-		btns = append(btns, common.ChoseFamily.InlineKeyboardButtonWithText(family.Name))
+		btns = append(btns, common.ChoseFamily.InlineKeyboardButtonWithText(
+			family.Name,
+			common.ChoseFamily.CallbackPayload(family.ID.String()),
+		))
 	}
 
 	return tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(btns...))

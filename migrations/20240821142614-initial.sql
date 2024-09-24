@@ -5,6 +5,7 @@ CREATE TABLE tg_user
     account_name     TEXT   NOT NULL,
     full_name        TEXT   NOT NULL,
     chosen_family_id UUID NULL,
+--     state            TEXT   NOT NULL,
     PRIMARY KEY (tg_id)
 );
 
@@ -32,9 +33,11 @@ CREATE TABLE item
 
 CREATE TABLE category
 (
-    id   UUID        NOT NULL,
-    name VARCHAR(64) NOT NULL,
-    PRIMARY KEY (id)
+    id        UUID        NOT NULL,
+    name      VARCHAR(64) NOT NULL,
+    family_id UUID REFERENCES family (id) ON UPDATE CASCADE,
+    PRIMARY KEY (id),
+    UNIQUE (name, family_id)
 );
 
 CREATE TABLE category_item
@@ -42,13 +45,6 @@ CREATE TABLE category_item
     category_id UUID REFERENCES category (id) ON UPDATE CASCADE ON DELETE CASCADE,
     item_id     UUID REFERENCES item (id) ON UPDATE CASCADE ON DELETE CASCADE,
     CONSTRAINT category_item_pkey PRIMARY KEY (category_id, item_id) -- explicit pk
-);
-
-CREATE TABLE category_family
-(
-    category_id UUID REFERENCES category (id) ON UPDATE CASCADE ON DELETE CASCADE,
-    family_id   UUID REFERENCES family (id) ON UPDATE CASCADE,
-    CONSTRAINT category_family_pkey PRIMARY KEY (category_id, family_id) -- explicit pk
 );
 
 -- +migrate Down

@@ -77,8 +77,14 @@ func (s Scanner[T]) Multi(rows pgx.Rows, err error) ([]*T, error) {
 	if err != nil {
 		return nil, sqlScanErr(err)
 	}
-
-	return s.multi(rows)
+	data, e := s.multi(rows)
+	if e != nil {
+		return nil, sqlScanErr(e)
+	}
+	if len(data) == 0 {
+		return nil, pgx.ErrNoRows
+	}
+	return data, nil
 }
 
 type ScannerOpts[T any] func(*Scanner[T])

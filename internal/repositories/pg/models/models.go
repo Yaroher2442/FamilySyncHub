@@ -9,13 +9,9 @@ import (
 )
 
 type Category struct {
-	ID   pgtype.UUID `db:"id"`
-	Name string      `db:"name"`
-}
-
-type CategoryFamily struct {
-	CategoryID pgtype.UUID `db:"category_id"`
-	FamilyID   pgtype.UUID `db:"family_id"`
+	ID       pgtype.UUID `db:"id"`
+	Name     string      `db:"name"`
+	FamilyID pgtype.UUID `db:"family_id"`
 }
 
 type CategoryItem struct {
@@ -41,6 +37,7 @@ type Item struct {
 
 type TgUser struct {
 	TgID           int64       `db:"tg_id"`
+	State          string      `db:"state"`
 	AccountName    string      `db:"account_name"`
 	FullName       string      `db:"full_name"`
 	ChosenFamilyID pgtype.UUID `db:"chosen_family_id"`

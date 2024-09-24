@@ -31,7 +31,7 @@ func (c *CreateFamilyController) Handle(ctx context.Context, update *telegram.Up
 	if err != nil {
 		return err
 	}
-	if helpers.ArgEmpty(update) {
+	if helpers.IsArgEmpty(update) {
 		return helpers.OnlyErr(
 			update.Bot.Send(
 				tgbotapi.NewMessage(
@@ -41,7 +41,7 @@ func (c *CreateFamilyController) Handle(ctx context.Context, update *telegram.Up
 			),
 		)
 	}
-	famName := helpers.FamName(update)
+	famName := helpers.CamelCaseArg(update)
 	txErr := c.txm.Do(ctx, func(ctx context.Context) error {
 		famId := uuid.New()
 		family := &domain.Family{

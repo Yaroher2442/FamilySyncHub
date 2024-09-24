@@ -1,6 +1,9 @@
 package pg
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 const (
 	sqlBuildStageErr = "sql build stage: "
@@ -44,4 +47,14 @@ func sqlScanErr(err error) error {
 		err:   err,
 		stage: sqlScanStageErr,
 	}
+}
+
+func IsPgxErr(err, target error) bool {
+	var cast *executorError
+	ok := errors.As(err, &cast)
+	if ok {
+		return errors.Is(cast.err, target)
+	}
+
+	return errors.Is(err, target)
 }
